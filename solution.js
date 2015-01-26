@@ -37,29 +37,38 @@
         });
         
         floors.forEach(function(floor) {
-            var handleFloorButtonPress = function() {
-                elevators.sort(function(a,b) {
-                    if (a.loadFactor() > 0.6) { return 1; }
-                    return (Math.abs(a.currentFloor-floor.floorNum) < Math.abs(b.currentFloor-floor.floorNum())) ? -1 : 1;
+            var handleFloorButtonPress = function(direction) {
+                if (elevators.filter(function(elevator) { return elevator.destinationQueue.indexOf(floor.floorNum) !== -1; }).length > 0) {
+                    return;
+                }
+                
+                var selectedElevator = null;
+                
+                var potentialElevators = elevators.filter(function(elevator) {
+                    return elevator.loadFactor() < 0.7 &&
+                           ((direction === 'up' && elevator.currentFloor < floor.floorNum && elevator.goingUpIndicator()) ||
+                           (direction === 'down' && elevator.currentFloor > floor.floorNum && elevator.goingDownIndicator()));
                 });
-                var closestElevator = null;
-                for (var i=0; i<elevators.length; i++) {
-                    if ((elevators[i].currentFloor > floor.floorNum() && elevators[i].goingDownIndicator()) ||
-                        (elevators[i].currentFloor < floor.floorNum() && elevators[i].goingUpIndicator())) {
-                       closestElevator = elevators[i];
-                       break;
-                    }
+                
+                if (potentialElevators.length === 0) {
+                    selectedElevator = elevators.sort(function(a,b) {
+                        return (Math.abs(a.currentFloor-floor.floorNum) < Math.abs(b.currentFloor-floor.floorNum())) ? -1 : 1;
+                    })[0];
+                } else if (potentialElevators.length === 1) {
+                    selectedElevator = potentialElevators[0];
+                } else {
+                    selectedElevator = potentialElevators.sort(function(a,b) {
+                        return (Math.abs(a.currentFloor-floor.floorNum) < Math.abs(b.currentFloor-floor.floorNum())) ? -1 : 1;
+                    })[0];
                 }
-                if(!closestElevator) {
-                    closestElevator = elevators[0];
-                }
-                queueIt(closestElevator, floor.floorNum());
+                
+                queueIt(selectedElevator, floor.floorNum());
             };
             floor.on("up_button_pressed", function() {
-                handleFloorButtonPress();
+                handleFloorButtonPress('up');
             });
             floor.on("down_button_pressed", function() {
-                handleFloorButtonPress();
+                handleFloorButtonPress('down');
             });
         });
     },
