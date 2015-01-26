@@ -1,17 +1,27 @@
 {
     init: function(elevators, floors) {
         var queueIt = function(elevator, floorNum) {
-            /*
-            console.log('queueing floor '+floorNum);
+            
             if (elevator.destinationQueue.indexOf(floorNum) === -1) {
+                console.log('queueing floor '+floorNum);
+                
                 elevator.destinationQueue.push(floorNum);
-                elevator.destinationQueue.sort(function(a, b) {
-                    return (Math.abs(elevator.currentFloor-a) < Math.abs(elevator.currentFloor-b)) ? -1 : 1;
-                });
+                
+                if(elevator.destinationQueue.length === 1) {
+                    return;
+                }
+                
+                var higher = elevator.destinationQueue.filter(function(num) { return num > floorNum; });
+                var lower = elevator.destinationQueue.filter(function(num) { return num <= floorNum; });
+                higher.sort();
+                lower.sort();
+                lower.reverse();
+                
+                elevator.destinationQueue = (elevator.goingUpIndicator()) ? higher.concat(lower) : lower.concat(higher);
+                
                 elevator.checkDestinationQueue();
+                console.log(elevator.destinationQueue);
             }
-            */
-            elevator.goToFloor(floorNum);
         };
         
         elevators.forEach(function(elevator) {
@@ -29,12 +39,12 @@
         floors.forEach(function(floor) {
             var handleFloorButtonPress = function() {
                 elevators.sort(function(a,b) {
+                    if (a.loadFactor() > 0.6) { return 1; }
                     return (Math.abs(a.currentFloor-floor.floorNum) < Math.abs(b.currentFloor-floor.floorNum())) ? -1 : 1;
                 });
                 var closestElevator = null;
                 for (var i=0; i<elevators.length; i++) {
-                    if (elevators[i].currentFloor === floor.floorNum() || 
-                        (elevators[i].currentFloor > floor.floorNum() && elevators[i].goingDownIndicator()) ||
+                    if ((elevators[i].currentFloor > floor.floorNum() && elevators[i].goingDownIndicator()) ||
                         (elevators[i].currentFloor < floor.floorNum() && elevators[i].goingUpIndicator())) {
                        closestElevator = elevators[i];
                        break;
