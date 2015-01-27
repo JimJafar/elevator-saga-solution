@@ -113,7 +113,9 @@
             });
             elevator.on("stopped_at_floor", function(floorNum) {
                 peopleWaitingAtFloors[floorNum][getDirection(elevator)] = false;
-                if(floorNum === 0) { elevator.goingUpIndicator(true); elevator.goingDownIndicator(false); }
+                if(floorNum === 0) { 
+                    elevator.goingUpIndicator(true); elevator.goingDownIndicator(false); 
+                }
             });
         });
         
@@ -122,13 +124,13 @@
                 var selectedElevator = null;
                 
                 elevators.forEach(function(elevator) {
-                    if(elevator.loadFactor < 0.7 && isPassing(elevator, floor.floorNum(), direction)) {
+                    if(elevator.destinationQueue.length === 0 || (elevator.loadFactor < 0.7 && isPassing(elevator, floor.floorNum(), direction))) {
                         selectedElevator = elevator;
                     }
                 });
                 
                 if(selectedElevator) {
-                    elevator.goToFloor(floor.floorNum(), true);
+                    selectedElevator.goToFloor(floor.floorNum(), true);
                 } else {
                     peopleWaitingAtFloors[floor.floorNum()][direction] = true;
                 }
