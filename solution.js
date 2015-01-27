@@ -107,7 +107,7 @@
             });
             elevator.on("passing_floor", function(floorNum, direction) {
                 setDirectionIndicators(elevator);
-                if (peopleWaitingAtFloors[floorNum][direction]) {
+                if (elevator.loadFactor < 0.7 && peopleWaitingAtFloors[floorNum][direction]) {
                     elevator.goToFloor(floorNum, true);
                 }
             });
@@ -122,7 +122,7 @@
                 var selectedElevator = null;
                 
                 elevators.forEach(function(elevator) {
-                    if(isPassing(elevator, floor.floorNum(), direction)) {
+                    if(elevator.loadFactor < 0.7 && isPassing(elevator, floor.floorNum(), direction)) {
                         selectedElevator = elevator;
                     }
                 });
